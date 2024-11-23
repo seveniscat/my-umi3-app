@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx'
-import moment, { Moment } from 'moment';
+import moment, { Moment } from 'moment-timezone';
 
 function handleJson(json: any[]) {
   let results: any = {}
@@ -50,14 +50,15 @@ function getPerson(e: any) {
     // 生成打卡时间
     const dateFormat = "YYYY/MM/DD HH:mm";
     if (!['--', '未打卡', ''].includes(person.earliest)) {
-      const m = moment(`${dateStr} ${person.earliest}`, dateFormat)
-      if (m) person.startMoment = m
+      const m = moment.tz(`${dateStr} ${person.earliest}`, dateFormat, 'Asia/Shanghai')
+      if (m.isValid()) person.startMoment = m
     }
     if (!['--', '未打卡'].includes(person.latest)) {
-      const m = moment(`${dateStr} ${person.latest}`, dateFormat)
-      if (m) person.endMoment = m
+      const m = moment.tz(`${dateStr} ${person.latest}`, dateFormat, 'Asia/Shanghai')
+      if (m.isValid()) person.endMoment = m
     }
   }
+
 
   return person
 }
@@ -70,21 +71,21 @@ function getApplicationMoment(application: any): Moment[] {
     // 11/5 上午 - 11/5 下午
     // 11/5 09:00 - 11/5 18:00
     // 11/8 14:00 - 11/15 18:00
-    let [startStr, endStar] = dateStr.split('-')
-    if (startStr.includes('上午') && endStar.includes('下午')) {
+    let [startStr, endStr] = dateStr.split('-')
+    if (startStr.includes('上午') && endStr.includes('下午')) {
       startStr = startStr.replace('上午', '08:30')
-      endStar = endStar.replace('下午', '17:30')
+      endStr = endStr.replace('下午', '17:00')
     } else {
       startStr = startStr.replace('上午', '08:30')
-      startStr = startStr.replace('下午', '12:30')
-      endStar = endStar.replace('上午', '12:00')
-      endStar = endStar.replace('下午', '17:30')
+      endStr = endStr.replace('上午', '12:00')
+      startStr = startStr.replace('下午', '13:00')
+      endStr = endStr.replace('下午', '17:00')
     }
     // console.log(startStr, endStar)
     // 定义日期时间格式
     const dateFormat = "MM/DD HH:mm";
-    const start = moment(startStr, dateFormat);
-    const end = moment(endStar, dateFormat);
+    const start = moment.tz(startStr, dateFormat, 'Asia/Shanghai');
+    const end = moment.tz(endStr, dateFormat, 'Asia/Shanghai');
     // console.log(startTime, endTime)
 
     if (start.isValid() && end.isValid()) {
@@ -97,7 +98,7 @@ function getApplicationMoment(application: any): Moment[] {
     // console.log(dateStr)
 
     const dateFormat = "MM-DD HH:mm";
-    const m = moment(dateStr, dateFormat)
+    const m = moment.tz(dateStr, dateFormat, 'Asia/Shanghai')
     console.log(m)
     if (m.isValid()) return [m]
 
@@ -106,7 +107,7 @@ function getApplicationMoment(application: any): Moment[] {
   return []
 
 }
-// 
+
 function extractBracketContent(input: string): string | undefined {
   // 使用正则表达式匹配括号内的内容
   const regex = /[$\（][^$\）]+[\)\）]/g;
@@ -149,7 +150,10 @@ export function handleFile(file: File | undefined) {
       const sheet = workbook.Sheets[sheetName]
       const dataJson = XLSX.utils.sheet_to_json(sheet)
       handleJson(dataJson)
-      console.log(workbook)
+      console.log(dataJson)
+
+      const sheet1 = XLSX.utils.json_to_sheet(dataJson)
+      XLSX.utils.sheet_to_csv(sheet1)
 
     }
   }
