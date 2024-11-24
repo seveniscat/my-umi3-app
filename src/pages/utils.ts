@@ -39,6 +39,8 @@ function handleJson(json: any[]) {
             }
           }
         }
+        // TODO 删除不必要的字段
+
         let current = results.find((res: any) => res.__EMPTY === name);
         if (!current) {
           results.push(person);

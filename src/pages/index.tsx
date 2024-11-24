@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { handleFile } from './utils';
-import { Button, Card, Divider, PageHeader, Table, Upload } from 'antd';
+import { Button, Card, Divider, Table } from 'antd';
 // import result from './resut.json';
 import './index.less';
 import * as XLSX from 'xlsx';
@@ -51,13 +51,16 @@ export default function IndexPage() {
   };
 
   const exportExcel = () => {
-    const newData = [titleColumn, sortedObject, ...dataSource];
-    const wb = XLSX.utils.book_new();
-    const newWorksheet = XLSX.utils.json_to_sheet(newData, {
-      skipHeader: true,
-    });
-    XLSX.utils.book_append_sheet(wb, newWorksheet, 'Sheet1');
-    XLSX.writeFile(wb, 'output.xlsx');
+    if (dataSource && dataSource.length) {
+      const newData = [titleColumn, sortedObject, ...dataSource];
+      const wb = XLSX.utils.book_new();
+      const newWorksheet = XLSX.utils.json_to_sheet(newData, {
+        skipHeader: true,
+      });
+      XLSX.utils.book_append_sheet(wb, newWorksheet, 'Sheet1');
+      const fileName = Object.values(titleColumn).join('');
+      XLSX.writeFile(wb, `${fileName}.xlsx`);
+    }
   };
 
   return (
@@ -81,12 +84,26 @@ export default function IndexPage() {
         }}
       ></input>
       <Divider />
-      <Button onClick={exportExcel} type="primary" style={{ marginBottom: 16 }}>
-        导出文件
-      </Button>
       <Table
-        title={() => '月度总结'}
+        title={() => {
+          if (titleColumn) {
+            return (
+              <h2>
+                {Object.values(titleColumn).join('')}
+                <Button
+                  onClick={exportExcel}
+                  type="primary"
+                  style={{ marginBottom: 16 }}
+                >
+                  导出文件
+                </Button>
+              </h2>
+            );
+          }
+          return '';
+        }}
         pagination={{ pageSize: 50 }}
+        scroll={{ x: 10000, y: 500 }}
         dataSource={dataSource}
         columns={columns}
       ></Table>
