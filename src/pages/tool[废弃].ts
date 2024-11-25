@@ -69,7 +69,7 @@ function getPerson(e: any) {
 }
 
 // application 转换为标准日期
-function getApplicationMoment(application: any): Moment[] {
+function getApplicationMoment(application: string): Moment[] {
   const dateStr = extractBracketContent(application);
   if (!dateStr) return [];
   if (dateStr.indexOf('-') > 2) {

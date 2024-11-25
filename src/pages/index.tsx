@@ -62,25 +62,30 @@ export default function IndexPage() {
       XLSX.writeFile(wb, `${fileName}.xlsx`);
     }
   };
+  // 渲染数据
+  const renderData = (data: any) => {
+    if (data) {
+      // [标题, 表头, [数据源]]
+      setTitleColumn(data[0]);
+      formatColumns(data[1]);
+      setDataSource(data.slice(2));
+      console.log('月度总结', data);
+    } else {
+      setDataSource([]);
+    }
+  };
 
+  // 入口函数
   return (
     <div>
       <h1>Hello World</h1>
       <input
         type="file"
         accept=".xls,.xlsx"
-        onChange={async (k) => {
-          handleFile(k.target.files?.[0], (data) => {
-            if (data) {
-              // [标题, 表头, [数据源]]
-              setTitleColumn(data[0]);
-              formatColumns(data[1]);
-              setDataSource(data.slice(2));
-              console.log('月度总结', data);
-            } else {
-              setDataSource([]);
-            }
-          });
+        onChange={(k) => {
+          const file = k.target.files?.[0];
+
+          handleFile(file, renderData);
         }}
       ></input>
       <Divider />
